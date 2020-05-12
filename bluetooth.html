@@ -1,0 +1,42 @@
+<script type="text/javascript">
+    RED.nodes.registerType('BLE scanner',{
+        category: 'Bluetooth',
+        color: '#4d94ff',
+        defaults: {
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "bluetooth.png",
+        label: function() {
+            return this.name||"BLE scanner";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="BLE scanner">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="BLE scanner">
+    <p>A bluetooth scanner node that will scan for devices in the vicinity.</p>
+    
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd> Define the scanner action. Must be either <code>start</code> or <code>stop</code> </dd>
+        <dt class="optional">services
+            <span class="property-type">array</span>
+        </dt>
+        <dd> Only scan for devices advertising these service UUID's. </dd>
+        <dt class="optional">continuous
+            <span class="property-type">boolean</span>
+            </dt>
+            <dd> Set to <code>true</code> to continue scanning after discovering first device. <code>false</code> by default </dd>
+</dl>
+
+</script>
+

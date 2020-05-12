@@ -1,0 +1,35 @@
+{
+  "name": "@clausbroch/node-red-contrib-noble-bluetooth",
+  "version": "0.0.1",
+  "description": "Node-RED node for interacting with with bluetooth devices.",
+  "main": "bluetooth.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clausbroch/node-red-contrib-noble-bluetooth.git"
+  },
+  "keywords": [
+    "node-red",
+    "ble",
+    "bluetooth",
+    "low energy",
+    "noble"
+  ],
+  "author": "Claus Broch",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/clausbroch/node-red-contrib-noble-bluetooth/issues"
+  },
+  "homepage": "https://github.com/clausbroch/node-red-contrib-noble-bluetooth#readme",
+  "node-red": {
+    "nodes": {
+      "bluetooth": "bluetooth.js"
+    }
+  },
+  "dependencies": {
+    "async": "^3.2.0",
+    "@abandonware/noble": "^1.9.2-8"
+  }
+}
