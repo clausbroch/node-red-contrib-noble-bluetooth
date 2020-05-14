@@ -34,9 +34,72 @@
         <dd> Only scan for devices advertising these service UUID's. </dd>
         <dt class="optional">continuous
             <span class="property-type">boolean</span>
-            </dt>
-            <dd> Set to <code>true</code> to continue scanning after discovering first device. <code>false</code> by default </dd>
-</dl>
+        </dt>
+        <dd> Set to <code>true</code> to continue scanning after discovering first device. <code>false</code> by default </dd>
+    </dl>
+    
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+    <dt>peripheral <span class="property-type">string</span></dt>
+    <dd> Internal reference for the discovered peripheral. Must be passed on to other BLE nodes </dd>
+    <dt>address <span class="property-type">string</span></dt>
+    <dd> The bluetooth MAC address of the peripheral </dd>
+    <dt>rssi <span class="property-type">number</span></dt>
+    <dd> The received signal strength (RSSI) </dd>
+    <dt>txPowerLevel <span class="property-type">number</span></dt>
+    <dd> The transmitter power level </dd>
+    <dt class="optional">connectable <span class="property-type">boolean</span></dt>
+    <dd> Indication if the peripheral is accepting connection </dd>
+    <dt class="optional">name <span class="property-type">string</span></dt>
+    <dd> Local name of the peripheral </dd>
+    <dt class="optional">manufacturerData <span class="property-type">buffer</span></dt>
+    <dd> Vendor specific data </dd>
+    <dt class="optional">services <span class="property-type">array</span></dt>
+    <dd> List of discovered service UUID's </dd>
 
+</dl>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('BLE device',{
+        category: 'Bluetooth',
+        color: '#4d94ff',
+        defaults: {
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "bluetooth.png",
+        label: function() {
+            return this.name||"BLE device";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="BLE device">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="BLE device">
+    <p>A bluetooth node that will connect to a peripheral device found by a BLE scanner node.</p>
+    
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>peripheral <span class="property-type">string</span></dt>
+        <dd> Peripheral reference received from a BLE scanner node </dd>
+     </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+    <dt>connected <span class="property-type">boolean</span></dt>
+    <dd> Status whether connection the peripheral was succesful </dd>
+    <dt>rssi <span class="property-type">number</span></dt>
+    <dd> The received signal strength (RSSI) </dd>
+    <dt>services <span class="property-type">array</span></dt>
+    <dd> List of discovered service UUID's </dd>
+    <dt>charateristics <span class="property-type">array</span></dt>
+    <dd> List of discovered charateristic UUID's </dd>
 </script>
 

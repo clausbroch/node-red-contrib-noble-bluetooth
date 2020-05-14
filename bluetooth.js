@@ -32,7 +32,7 @@ module.exports = function(RED) {
                  const serviceData = advertisement.serviceData;
                  const serviceUuids = advertisement.serviceUuids;
                  var msg = { };
-                 msg._peripheral = peripheral.id;
+                 msg.peripheral = peripheral.id;
                  msg.address = peripheral.address;
                  msg.rssi = peripheral.rssi;
                  if(typeof peripheral.connectable !== 'undefined') {
@@ -47,11 +47,8 @@ module.exports = function(RED) {
                  if(manufacturerData) {
                     msg.manufacturerData = manufacturerData;
                  }
-                 if(serviceData) {
-                    msg.serviceData = serviceData;
-                 }
                  if(serviceUuids) {
-                    msg.serviceUuids = serviceUuids;
+                    msg.services = serviceUuids;
                  }
                  if(node._continuous == false) {
                     noble.stopScanning();
@@ -106,4 +103,62 @@ module.exports = function(RED) {
 
     }
     RED.nodes.registerType("BLE scanner",BLEScannerNode);
+
+    function BLEDeviceNode(config) {
+        RED.nodes.createNode(this,config);
+        var node = this;
+        
+        node.on('input', function(msg) {
+            if (!msg.peripheral) {
+                node.status({ fill: "red", shape: "dot", text: "invalid peripheral id" });
+                return;
+            }
+            var peripheral = noble._peripherals[msg.peripheral];
+            peripheral.connect(function(error) {
+                if (error) {
+                   node.error("Error connecting: " + error);
+                   node.status({ fill: "red", shape: "dot", text: "error connecting" });
+                   return;
+                }
+                
+                msg.connected = true;
+                msg.connectable = peripheral.connectable;
+                msg.rssi = peripheral.rssi;
+
+                node.on('close', function(done) {
+                    peripheral.disconnect();
+                    done();
+                });
+                               
+                node.status({ fill: "green", shape: "dot", text: "connecting" });
+
+                peripheral.discoverAllServicesAndCharacteristics(function(error, services, characteristics) {
+                    if (error) {
+                       node.error("Error discovering services: " + error);
+                       node.status({ fill: "red", shape: "dot", text: "error finding services" });
+                       return;
+                    }
+                    var serviceUuids = [];
+                    services.forEach(function(value, index, array) {
+                        serviceUuids.push(value.uuid);
+                    });
+                    msg.services = serviceUuids;
+                    var characteristicUuids = [];
+                    characteristics.forEach(function(value, index, array) {
+                        characteristicUuids.push(value.uuid);
+                    });
+                    msg.characteristics = characteristicUuids;
+                    node.status({ fill: "green", shape: "dot", text: "connected" });
+                    node.send(msg);
+               });
+
+            });
+
+        });
+ 
+        node.on('close', function(done) {
+            done();
+        });
+    }
+    RED.nodes.registerType("BLE device",BLEDeviceNode);
 }
