@@ -93,13 +93,15 @@
      </dl>
     <h3>Outputs</h3>
     <dl class="message-properties">
+    <dt>topic <span class="property-type">string</span></dt>
+    <dd> Will be either <code>connected</code> or <code>disconnected</code> </dd>
     <dt>connected <span class="property-type">boolean</span></dt>
-    <dd> Status whether connection the peripheral was succesful </dd>
-    <dt>rssi <span class="property-type">number</span></dt>
+    <dd> Status if currently connected to the peripheral </dd>
+    <dt class="optional">rssi <span class="property-type">number</span></dt>
     <dd> The received signal strength (RSSI) </dd>
-    <dt>services <span class="property-type">array</span></dt>
+    <dt class="optional">services <span class="property-type">array</span></dt>
     <dd> List of discovered service UUID's </dd>
-    <dt>charateristics <span class="property-type">array</span></dt>
+    <dt class="optional">charateristics <span class="property-type">array</span></dt>
     <dd> List of discovered charateristic UUID's </dd>
 </script>
 

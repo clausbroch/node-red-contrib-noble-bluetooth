@@ -108,12 +108,27 @@ module.exports = function(RED) {
         RED.nodes.createNode(this,config);
         var node = this;
         
+        function deviceDisconnected() {
+            node.status({});
+            var msg = {}
+            msg.connected = false;
+            msg.connectable = node._peripheral.connectable;
+            msg.peripheral = node._peripheral.id;
+            msg.address = node._peripheral.address;
+            msg.topic = "disconnected";
+            node.send(msg);
+        }
+        
         node.on('input', function(msg) {
             if (!msg.peripheral) {
                 node.status({ fill: "red", shape: "dot", text: "invalid peripheral id" });
                 return;
             }
-            var peripheral = noble._peripherals[msg.peripheral];
+            if(node._peripheral) {
+                node._peripheral.removeListener('disconnect', deviceDisconnected);
+            }
+            node._peripheral = noble._peripherals[msg.peripheral];
+            var peripheral = node._peripheral;
             peripheral.connect(function(error) {
                 if (error) {
                    node.error("Error connecting: " + error);
@@ -129,6 +144,7 @@ module.exports = function(RED) {
                     peripheral.disconnect();
                     done();
                 });
+                peripheral.once('disconnect', deviceDisconnected);
                                
                 node.status({ fill: "green", shape: "dot", text: "connecting" });
 
@@ -148,6 +164,7 @@ module.exports = function(RED) {
                         characteristicUuids.push(value.uuid);
                     });
                     msg.characteristics = characteristicUuids;
+                    msg.topic = "connected";
                     node.status({ fill: "green", shape: "dot", text: "connected" });
                     node.send(msg);
                });
