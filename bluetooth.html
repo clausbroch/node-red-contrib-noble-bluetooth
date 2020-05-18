@@ -100,8 +100,50 @@
     <dt class="optional">rssi <span class="property-type">number</span></dt>
     <dd> The received signal strength (RSSI) </dd>
     <dt class="optional">services <span class="property-type">array</span></dt>
-    <dd> List of discovered service UUID's </dd>
+    <dd> List of discovered services </dd>
     <dt class="optional">charateristics <span class="property-type">array</span></dt>
-    <dd> List of discovered charateristic UUID's </dd>
+    <dd> List of discovered charateristics </dd>
 </script>
 
+<script type="text/javascript">
+    RED.nodes.registerType('BLE in',{
+        category: 'Bluetooth',
+        color: '#4d94ff',
+        defaults: {
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "bluetooth.png",
+        label: function() {
+            return this.name||"BLE in";
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="BLE in">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="BLE in">
+    <p>A bluetooth node that will read or subscribe to data from a BLE peripheral.</p>
+    
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>peripheral <span class="property-type">string</span></dt>
+        <dd> Peripheral reference received from a BLE scanner node </dd>
+        <dt>characteristic <span class="property-type">object</span></dt>
+        <dd> Characteristic to read or subscribe to </dd>
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd> Must be either <code>read</code>, <code>subscribe</code> or <code>unsubscribe</code></dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+    <dt>payload <span class="property-type">buffer</span></dt>
+    <dd> Data received from the device </dd>
+    <dt>characteristic <span class="property-type">object</span></dt>
+    <dd> Characteristic the data originated from </dd>
+</script>

@@ -4,6 +4,10 @@ const async = require('async');
 "use strict";
 
 module.exports = function(RED) {
+    
+    //
+    // BLE scanner node
+    //
     function BLEScannerNode(config) {
         RED.nodes.createNode(this,config);
         var node = this;
@@ -104,6 +108,9 @@ module.exports = function(RED) {
     }
     RED.nodes.registerType("BLE scanner",BLEScannerNode);
 
+    //
+    // BLE device node
+    //
     function BLEDeviceNode(config) {
         RED.nodes.createNode(this,config);
         var node = this;
@@ -128,6 +135,8 @@ module.exports = function(RED) {
                 node._peripheral.removeListener('disconnect', deviceDisconnected);
             }
             node._peripheral = noble._peripherals[msg.peripheral];
+            //node._services = null;
+            //node._characteristics = null;
             var peripheral = node._peripheral;
             peripheral.connect(function(error) {
                 if (error) {
@@ -154,17 +163,43 @@ module.exports = function(RED) {
                        node.status({ fill: "red", shape: "dot", text: "error finding services" });
                        return;
                     }
-                    var serviceUuids = [];
+                                                                 node.log("Discovered services and characteristics");
+                    var services_ = [];
+                    //node._services = services;
                     services.forEach(function(value, index, array) {
-                        serviceUuids.push(value.uuid);
+                        var service_ = {};
+                        service_.uuid = value.uuid;
+                        service_.name = value.name;
+                        service_.type = value.type;
+                        var serviceChars_ = [];
+                        value.characteristics.forEach(function(value_, index_, array_) {
+                            var serviceChar_ = {};
+                            serviceChar_.uuid = value_.uuid;
+                            serviceChar_.serviceUuid = service_.uuid;
+                            serviceChar_.name = value_.name;
+                            serviceChar_.type = value_.type;
+                            serviceChar_.properties = value_.properties;
+                            serviceChars_.push(serviceChar_);
+                        });
+                        service_.characteristics = serviceChars_;
+                        services_.push(service_);
                     });
-                    msg.services = serviceUuids;
-                    var characteristicUuids = [];
+                    msg.services = services_;
+                                                                 
+                    var characteristics_ = [];
+                    //node._characteristics = characteristics;
                     characteristics.forEach(function(value, index, array) {
-                        characteristicUuids.push(value.uuid);
+                        var characteristic_ = {};
+                        characteristic_.uuid = value.uuid;
+                        characteristic_.serviceUuid = value._serviceUuid;
+                        characteristic_.name = value.name;
+                        characteristic_.type = value.type;
+                        characteristic_.properties = value.properties;
+                        characteristics_.push(characteristic_);
                     });
-                    msg.characteristics = characteristicUuids;
+                    msg.characteristics = characteristics_;
                     msg.topic = "connected";
+                                                                 msg._peripheral = peripheral;
                     node.status({ fill: "green", shape: "dot", text: "connected" });
                     node.send(msg);
                });
@@ -178,4 +213,97 @@ module.exports = function(RED) {
         });
     }
     RED.nodes.registerType("BLE device",BLEDeviceNode);
+    
+    //
+    // BLE in node
+    //
+    function BLEInNode(config) {
+        RED.nodes.createNode(this,config);
+        var node = this;
+        
+        function deviceDisconnected() {
+            node.status({});
+        }
+
+        node.on('input', function(msg) {
+            if (!msg.peripheral) {
+                node.error("Invalid peripheral id");
+                node.status({ fill: "red", shape: "dot", text: "invalid peripheral id" });
+                return;
+            }
+            var peripheral = noble._peripherals[msg.peripheral];
+            if(!msg.characteristic) {
+                node.error("Missing characteristic");
+                node.status({ fill: "red", shape: "dot", text: "missing characteristic" });
+                return;
+            }
+            var serviceUuid = msg.characteristic.serviceUuid;
+            if(!serviceUuid) {
+                node.error("Missing service UUID");
+                node.status({ fill: "red", shape: "dot", text: "missing service UUID" });
+                return;
+            }
+            var characteristicUuid = msg.characteristic.uuid;
+            if(!characteristicUuid) {
+                node.error("Missing characteristic UUID");
+                node.status({ fill: "red", shape: "dot", text: "missing characteristic UUID" });
+                return;
+            }
+            var characteristic = noble._characteristics[peripheral.id][serviceUuid][characteristicUuid];
+            if(!characteristic) {
+                node.error("Invalid characteristic");
+                node.status({ fill: "red", shape: "dot", text: "invalid characteristic" });
+                return;
+            }
+
+            peripheral.once('disconnect', function () {
+                node.status({});
+            });
+
+            if(msg.topic === "subscribe") {
+                characteristic.on('data', function(data, isNotification) {
+                    var msg_ = {};
+                    msg_.characteristic = msg.characteristic;
+                    msg_.payload = data;
+                    node.send(msg_);
+                });
+                characteristic.subscribe(function(error) {
+                    if (error) {
+                       node.error("Error subscribing to characteristic: " + error);
+                       node.status({ fill: "red", shape: "dot", text: "error subscribibg" });
+                       return;
+                    }
+                    node.status({ fill: "green", shape: "dot", text: "subscribed" });
+                });
+            }
+            else if(msg.topic === "unsubscribe") {
+                characteristic.unsubscribe(function(error) {
+                    if (error) {
+                        node.error("Error unsubscribing from characteristic: " + error);
+                        return;
+                    }
+                    node.status({});
+                });
+            }
+            else if(!msg.topic || msg.topic === "read") {
+                characteristic.read(function(error, data) {
+                    if (error) {
+                       node.error("Error reading from characteristic: " + error);
+                       return;
+                    }
+                    var msg_ = {};
+                    msg_.characteristic = msg.characteristic;
+                    msg_.payload = data;
+                    node.send(msg_);
+                });
+            }
+            else {
+                node.error("Invalid topic: " + topic);
+                return;
+            }
+        });
+    }
+    RED.nodes.registerType("BLE in",BLEInNode);
+
 }
+
