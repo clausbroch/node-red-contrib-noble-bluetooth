@@ -1,5 +1,5 @@
 const noble = require('@abandonware/noble');
-const async = require('async');
+//const async = require('async');
 
 "use strict";
 
@@ -270,7 +270,7 @@ module.exports = function(RED) {
                 characteristic.subscribe(function(error) {
                     if (error) {
                        node.error("Error subscribing to characteristic: " + error);
-                       node.status({ fill: "red", shape: "dot", text: "error subscribibg" });
+                       node.status({ fill: "red", shape: "dot", text: "error subscribing" });
                        return;
                     }
                     node.status({ fill: "green", shape: "dot", text: "subscribed" });
@@ -304,6 +304,72 @@ module.exports = function(RED) {
         });
     }
     RED.nodes.registerType("BLE in",BLEInNode);
+
+    //
+    // BLE in node
+    //
+    function BLEOutNode(config) {
+        RED.nodes.createNode(this,config);
+        var node = this;
+ 
+        node.on('input', function(msg) {
+            if (!msg.peripheral) {
+                node.error("Invalid peripheral id");
+                node.status({ fill: "red", shape: "dot", text: "invalid peripheral id" });
+                return;
+            }
+            var peripheral = noble._peripherals[msg.peripheral];
+            if(!msg.characteristic) {
+                node.error("Missing characteristic");
+                node.status({ fill: "red", shape: "dot", text: "missing characteristic" });
+                return;
+            }
+            var serviceUuid = msg.characteristic.serviceUuid;
+            if(!serviceUuid) {
+                node.error("Missing service UUID");
+                node.status({ fill: "red", shape: "dot", text: "missing service UUID" });
+                return;
+            }
+            var characteristicUuid = msg.characteristic.uuid;
+            if(!characteristicUuid) {
+                node.error("Missing characteristic UUID");
+                node.status({ fill: "red", shape: "dot", text: "missing characteristic UUID" });
+                return;
+            }
+            var characteristic = noble._characteristics[peripheral.id][serviceUuid][characteristicUuid];
+            if(!characteristic) {
+                node.error("Invalid characteristic");
+                node.status({ fill: "red", shape: "dot", text: "invalid characteristic" });
+                return;
+            }
+            var data = msg.payload;
+            if(!data) {
+                node.error("Missing payload");
+                node.status({ fill: "red", shape: "dot", text: "missing payload" });
+                return;
+            }
+            if(typeof data === "string") {
+                data = Buffer.from(data);
+            }
+            if(Buffer.isBuffer(data) === false) {
+                node.error("Invalid payload type. Must be string or buffer object");
+                node.status({ fill: "red", shape: "dot", text: "invalid payload" });
+                return;
+            }
+
+            // true if for write without response
+            node.log("Writing data to characteristic");
+            characteristic.write(data, true, function(error) {
+                if (error) {
+                    node.error("Error writing to characteristic: " + error);
+                    node.status({ fill: "red", shape: "dot", text: "error writing" });
+                    return;
+                }
+                node.status({});
+            });
+        });
+    }
+    RED.nodes.registerType("BLE out",BLEOutNode);
 
 }
 
