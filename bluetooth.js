@@ -11,6 +11,7 @@ module.exports = function(RED) {
     function BLEScannerNode(config) {
         RED.nodes.createNode(this,config);
         var node = this;
+        node.config = config;
         node._continuous = false;
 
         noble.on('stateChange', function(state) {
@@ -65,15 +66,24 @@ module.exports = function(RED) {
             noble.removeListener('scanStop', scanStopped);
             noble.once('scanStart', scanStarted);
             noble.once('scanStop', scanStopped);
+            
                 
             if(msg.topic === "start") {
                 clearTimeout(node._timeoutFunc);
                 var serviceUuids = [];
-                if(msg.services) {
+                var services = RED.util.evaluateNodeProperty(node.config.services, node.config.servicesType, node);
+                if(services) {
+                    serviceUuids = services;
+                }
+                else if(msg.services) {
                     serviceUuids = msg.services;
                 }
-                node._continuous = false;
-                if(msg.continuous) {
+                if(typeof serviceUuids === "string") {
+                    serviceUuids = [serviceUuids];
+                }
+
+                node._continuous = node.config.continuous;
+                if(!node._continuous && msg.continuous) {
                     node._continuous = msg.continuous == true;
                 }
                 noble.startScanning(serviceUuids, false, function(error) {
@@ -306,7 +316,7 @@ module.exports = function(RED) {
     RED.nodes.registerType("BLE in",BLEInNode);
 
     //
-    // BLE in node
+    // BLE out node
     //
     function BLEOutNode(config) {
         RED.nodes.createNode(this,config);
