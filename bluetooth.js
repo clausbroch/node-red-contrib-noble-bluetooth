@@ -224,13 +224,27 @@ module.exports = function(RED) {
     }
     RED.nodes.registerType("BLE device",BLEDeviceNode);
     
+    function FindServiceUUID(node, peripheral, characteristicUuid) {
+        var service_ = peripheral.services.find(function(service, index, array) {
+            var char_ = service.characteristics.find(function(characteristic, index, array) {
+                return characteristic.uuid == characteristicUuid;
+            });
+            return typeof char_ != 'undefined';
+        });
+        if(typeof service_ != 'undefined') {
+            return service_.uuid;
+        }
+        return "";
+    }
+    
     //
     // BLE in node
     //
     function BLEInNode(config) {
         RED.nodes.createNode(this,config);
         var node = this;
-        
+        node.config = config;
+
         function deviceDisconnected() {
             node.status({});
         }
@@ -242,23 +256,30 @@ module.exports = function(RED) {
                 return;
             }
             var peripheral = noble._peripherals[msg.peripheral];
-            if(!msg.characteristic) {
-                node.error("Missing characteristic");
-                node.status({ fill: "red", shape: "dot", text: "missing characteristic" });
+                
+            if(!peripheral) {
+                node.error("Unknown peripheral");
+                node.status({ fill: "red", shape: "dot", text: "unknown peripheral" });
                 return;
             }
-            var serviceUuid = msg.characteristic.serviceUuid;
-            if(!serviceUuid) {
-                node.error("Missing service UUID");
-                node.status({ fill: "red", shape: "dot", text: "missing service UUID" });
-                return;
+            
+            var characteristicUuid = node.config.characteristic;
+            if(!characteristicUuid && msg.characteristic) {
+                characteristicUuid = msg.characteristic;
             }
-            var characteristicUuid = msg.characteristic.uuid;
             if(!characteristicUuid) {
                 node.error("Missing characteristic UUID");
                 node.status({ fill: "red", shape: "dot", text: "missing characteristic UUID" });
                 return;
             }
+                
+            var serviceUuid = FindServiceUUID(node, peripheral, characteristicUuid);
+            if(!serviceUuid) {
+                node.error("Service not found for characteristic " + characteristicUuid);
+                node.status({ fill: "red", shape: "dot", text: "service not found" });
+                return;
+            }
+
             var characteristic = noble._characteristics[peripheral.id][serviceUuid][characteristicUuid];
             if(!characteristic) {
                 node.error("Invalid characteristic");
@@ -270,7 +291,11 @@ module.exports = function(RED) {
                 node.status({});
             });
 
-            if(msg.topic === "subscribe") {
+            var topic = node.config.topic;
+            if(!topic && msg.topic) {
+                topic = msg.topic;
+            }
+            if(topic === "subscribe") {
                 characteristic.on('data', function(data, isNotification) {
                     var msg_ = {};
                     msg_.characteristic = msg.characteristic;
@@ -286,7 +311,7 @@ module.exports = function(RED) {
                     node.status({ fill: "green", shape: "dot", text: "subscribed" });
                 });
             }
-            else if(msg.topic === "unsubscribe") {
+            else if(topic === "unsubscribe") {
                 characteristic.unsubscribe(function(error) {
                     if (error) {
                         node.error("Error unsubscribing from characteristic: " + error);
@@ -295,7 +320,7 @@ module.exports = function(RED) {
                     node.status({});
                 });
             }
-            else if(!msg.topic || msg.topic === "read") {
+            else if(!topic || topic === "read") {
                 characteristic.read(function(error, data) {
                     if (error) {
                        node.error("Error reading from characteristic: " + error);

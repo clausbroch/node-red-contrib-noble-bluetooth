@@ -97,7 +97,7 @@
 
 <script type="text/html" data-template-name="BLE device">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
 </script>
@@ -129,6 +129,8 @@
         category: 'Bluetooth',
         color: '#4d94ff',
         defaults: {
+            topic: {value:""},
+            characteristic: {value:""},
             name: {value:""}
         },
         inputs:1,
@@ -142,7 +144,15 @@
 
 <script type="text/html" data-template-name="BLE in">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <label for="node-input-topic" style="width: 120px"><i class="fa fa-tasks"></i> Topic</label>
+        <input type="text" id="node-input-topic" placeholder="Topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-characteristic" style="width: 120px"><i class="fa fa-envelope"></i> Characteristic</label>
+        <input type="text" id="node-input-characteristic" placeholder="Characteristic UUID">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name" style="width: 120px"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
 </script>
@@ -154,8 +164,8 @@
     <dl class="message-properties">
         <dt>peripheral <span class="property-type">string</span></dt>
         <dd> Peripheral reference received from a BLE scanner node </dd>
-        <dt>characteristic <span class="property-type">object</span></dt>
-        <dd> Characteristic to read or subscribe to </dd>
+        <dt>characteristic <span class="property-type">string</span></dt>
+        <dd> Characteristic UUID to read or subscribe to </dd>
         <dt>topic <span class="property-type">string</span></dt>
         <dd> Must be either <code>read</code>, <code>subscribe</code> or <code>unsubscribe</code></dd>
     </dl>
@@ -186,7 +196,7 @@
 
 <script type="text/html" data-template-name="BLE out">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
 </script>
