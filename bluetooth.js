@@ -173,7 +173,7 @@ module.exports = function(RED) {
                        node.status({ fill: "red", shape: "dot", text: "error finding services" });
                        return;
                     }
-                                                                 node.log("Discovered services and characteristics");
+
                     var services_ = [];
                     //node._services = services;
                     services.forEach(function(value, index, array) {
@@ -346,7 +346,8 @@ module.exports = function(RED) {
     function BLEOutNode(config) {
         RED.nodes.createNode(this,config);
         var node = this;
- 
+        node.config = config;
+
         node.on('input', function(msg) {
             if (!msg.peripheral) {
                 node.error("Invalid peripheral id");
@@ -354,29 +355,37 @@ module.exports = function(RED) {
                 return;
             }
             var peripheral = noble._peripherals[msg.peripheral];
-            if(!msg.characteristic) {
-                node.error("Missing characteristic");
-                node.status({ fill: "red", shape: "dot", text: "missing characteristic" });
+                
+            if(!peripheral) {
+                node.error("Unknown peripheral");
+                node.status({ fill: "red", shape: "dot", text: "unknown peripheral" });
                 return;
             }
-            var serviceUuid = msg.characteristic.serviceUuid;
-            if(!serviceUuid) {
-                node.error("Missing service UUID");
-                node.status({ fill: "red", shape: "dot", text: "missing service UUID" });
-                return;
+            
+            var characteristicUuid = node.config.characteristic;
+            if(!characteristicUuid && msg.characteristic) {
+                characteristicUuid = msg.characteristic;
             }
-            var characteristicUuid = msg.characteristic.uuid;
             if(!characteristicUuid) {
                 node.error("Missing characteristic UUID");
                 node.status({ fill: "red", shape: "dot", text: "missing characteristic UUID" });
                 return;
             }
+                
+            var serviceUuid = FindServiceUUID(node, peripheral, characteristicUuid);
+            if(!serviceUuid) {
+                node.error("Service not found for characteristic " + characteristicUuid);
+                node.status({ fill: "red", shape: "dot", text: "service not found" });
+                return;
+            }
+
             var characteristic = noble._characteristics[peripheral.id][serviceUuid][characteristicUuid];
             if(!characteristic) {
                 node.error("Invalid characteristic");
                 node.status({ fill: "red", shape: "dot", text: "invalid characteristic" });
                 return;
             }
+
             var data = msg.payload;
             if(!data) {
                 node.error("Missing payload");
@@ -393,7 +402,6 @@ module.exports = function(RED) {
             }
 
             // true if for write without response
-            node.log("Writing data to characteristic");
             characteristic.write(data, true, function(error) {
                 if (error) {
                     node.error("Error writing to characteristic: " + error);

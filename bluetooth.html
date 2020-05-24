@@ -182,6 +182,7 @@
         category: 'Bluetooth',
         color: '#4d94ff',
         defaults: {
+            characteristic: {value:""},
             name: {value:""}
         },
         inputs:1,
@@ -196,7 +197,11 @@
 
 <script type="text/html" data-template-name="BLE out">
     <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <label for="node-input-characteristic" style="width: 120px"><i class="fa fa-envelope"></i> Characteristic</label>
+        <input type="text" id="node-input-characteristic" placeholder="Characteristic UUID">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name" style="width: 120px"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
 </script>
