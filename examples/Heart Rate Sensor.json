@@ -1,0 +1,204 @@
+[
+    {
+        "id": "f04655a6.2e0548",
+        "type": "tab",
+        "label": "Heart Rate",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "204c2dc0.c9dcb2",
+        "type": "inject",
+        "z": "f04655a6.2e0548",
+        "name": "Start scan",
+        "topic": "start",
+        "payload": "{}",
+        "payloadType": "json",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 100,
+        "y": 100,
+        "wires": [
+            [
+                "35c7b3f4.1bddfc"
+            ]
+        ]
+    },
+    {
+        "id": "35c7b3f4.1bddfc",
+        "type": "BLE scanner",
+        "z": "f04655a6.2e0548",
+        "name": "",
+        "services": "180d",
+        "servicesType": "str",
+        "continuous": false,
+        "x": 250,
+        "y": 100,
+        "wires": [
+            [
+                "bd89d1.4ab0063"
+            ]
+        ]
+    },
+    {
+        "id": "bd89d1.4ab0063",
+        "type": "BLE device",
+        "z": "f04655a6.2e0548",
+        "name": "",
+        "x": 410,
+        "y": 100,
+        "wires": [
+            [
+                "b1ac49fd.16a198"
+            ]
+        ]
+    },
+    {
+        "id": "77026649.60e678",
+        "type": "BLE in",
+        "z": "f04655a6.2e0548",
+        "topic": "subscribe",
+        "characteristic": "2a37",
+        "name": "Subscribe HRM",
+        "x": 720,
+        "y": 40,
+        "wires": [
+            [
+                "42896f73.29856"
+            ]
+        ]
+    },
+    {
+        "id": "b1ac49fd.16a198",
+        "type": "switch",
+        "z": "f04655a6.2e0548",
+        "name": "",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "connected",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 550,
+        "y": 100,
+        "wires": [
+            [
+                "ec1ad005.20c34",
+                "77026649.60e678",
+                "3c50f2cc.701e8e"
+            ]
+        ]
+    },
+    {
+        "id": "42896f73.29856",
+        "type": "function",
+        "z": "f04655a6.2e0548",
+        "name": "Decode heart rate",
+        "func": "var buffer = msg.payload;\nvar flags = buffer.readUInt8();\nconst format = flags & 0x01;\nconst connection = (flags & 0x6) >> 1;\n\nif(connection === 2) {\n    node.status({ fill: \"yellow\", shape: \"dot\", text: \"No sensor contact\" });\n}\nelse {\n    var bpm;\n    buffer = buffer.slice(1);\n    if(format === 0) {\n        bpm = buffer.readUInt8();\n    }\n    else {\n        bpm = buffer.readUInt16();\n    }\n    node.status({ fill: \"green\", shape: \"dot\", text: \"Heart rate: \" + bpm + \" BPM\" });\n}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 910,
+        "y": 40,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ec1ad005.20c34",
+        "type": "change",
+        "z": "f04655a6.2e0548",
+        "name": "Device Name",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "read",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "characteristic",
+                "pt": "msg",
+                "to": "2a00",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 720,
+        "y": 160,
+        "wires": [
+            [
+                "d1354916.cd3628"
+            ]
+        ]
+    },
+    {
+        "id": "d1354916.cd3628",
+        "type": "BLE in",
+        "z": "f04655a6.2e0548",
+        "name": "",
+        "x": 870,
+        "y": 160,
+        "wires": [
+            [
+                "af846296.3da97"
+            ]
+        ]
+    },
+    {
+        "id": "af846296.3da97",
+        "type": "function",
+        "z": "f04655a6.2e0548",
+        "name": "Decode device name",
+        "func": "node.status(msg.payload.toString());\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 1040,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3c50f2cc.701e8e",
+        "type": "BLE in",
+        "z": "f04655a6.2e0548",
+        "topic": "read",
+        "characteristic": "2a29",
+        "name": "Read manufacturer",
+        "x": 730,
+        "y": 100,
+        "wires": [
+            [
+                "56dac25a.4e535c"
+            ]
+        ]
+    },
+    {
+        "id": "56dac25a.4e535c",
+        "type": "function",
+        "z": "f04655a6.2e0548",
+        "name": "Decode manufacturer name",
+        "func": "node.status(msg.payload.toString());\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 960,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    }
+]
