@@ -209,7 +209,7 @@ module.exports = function(RED) {
                     });
                     msg.characteristics = characteristics_;
                     msg.topic = "connected";
-                                                                 msg._peripheral = peripheral;
+                    msg._peripheral = peripheral;
                     node.status({ fill: "green", shape: "dot", text: "connected" });
                     node.send(msg);
                });
@@ -298,7 +298,7 @@ module.exports = function(RED) {
             if(topic === "subscribe") {
                 characteristic.on('data', function(data, isNotification) {
                     var msg_ = {};
-                    msg_.characteristic = msg.characteristic;
+                    msg_.characteristic = characteristic.uuid;
                     msg_.payload = data;
                     node.send(msg_);
                 });
@@ -327,7 +327,7 @@ module.exports = function(RED) {
                        return;
                     }
                     var msg_ = {};
-                    msg_.characteristic = msg.characteristic;
+                    msg_.characteristic = characteristic.uuid;
                     msg_.payload = data;
                     node.send(msg_);
                 });
