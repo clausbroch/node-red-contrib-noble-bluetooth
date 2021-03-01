@@ -55,6 +55,9 @@ module.exports = function(RED) {
                  if(serviceUuids) {
                     msg.services = serviceUuids;
                  }
+                 if(serviceData) {
+                     msg.serviceData = serviceData;
+                 }
                  if(node._continuous == false) {
                     noble.stopScanning();
                  }
