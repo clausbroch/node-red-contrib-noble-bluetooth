@@ -6,7 +6,8 @@
             name: {value:""},
             services: {value:"", validate: RED.validators.typedInput("servicesType")},
             servicesType: {value:"str"},
-            continuous: {value:false}
+            continuous: {value:false},
+            duplicate: {value:false}
         },
         inputs:1,
         outputs:1,
@@ -35,6 +36,10 @@
         <input type="checkbox" id="node-input-continuous" style="display:inline-block; width:22px; vertical-align:baseline;">Continuous scanning
     </div>
     <div class="form-row">
+        <label for="node-input-duplicate">&nbsp;</label>
+        <input type="checkbox" id="node-input-duplicate" style="display:inline-block; width:22px; vertical-align:baseline;">Duplicate scanning result
+    </div>
+    <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
@@ -55,6 +60,10 @@
             <span class="property-type">boolean</span>
         </dt>
         <dd> Set to <code>true</code> to continue scanning after discovering first device. <code>false</code> by default </dd>
+        <dt class="optional">duplicate
+            <span class="property-type">boolean</span>
+        </dt>
+        <dd> Set to <code>true</code> to duplicate scanning result. <code>false</code> by default </dd>
         <dt class="optional">timeout
             <span class="property-type">number</span>
         </dt>
@@ -63,24 +72,23 @@
     
     <h3>Outputs</h3>
     <dl class="message-properties">
-    <dt>peripheral <span class="property-type">string</span></dt>
-    <dd> Internal reference for the discovered peripheral. Must be passed on to other BLE nodes </dd>
-    <dt>address <span class="property-type">string</span></dt>
-    <dd> The bluetooth MAC address of the peripheral </dd>
-    <dt>rssi <span class="property-type">number</span></dt>
-    <dd> The received signal strength (RSSI) </dd>
-    <dt>txPowerLevel <span class="property-type">number</span></dt>
-    <dd> The transmitter power level </dd>
-    <dt class="optional">connectable <span class="property-type">boolean</span></dt>
-    <dd> Indication if the peripheral is accepting connection </dd>
-    <dt class="optional">name <span class="property-type">string</span></dt>
-    <dd> Local name of the peripheral </dd>
-    <dt class="optional">manufacturerData <span class="property-type">buffer</span></dt>
-    <dd> Vendor specific data </dd>
-    <dt class="optional">services <span class="property-type">array</span></dt>
-    <dd> List of discovered service UUID's </dd>
-
-</dl>
+        <dt>peripheral <span class="property-type">string</span></dt>
+        <dd> Internal reference for the discovered peripheral. Must be passed on to other BLE nodes </dd>
+        <dt>address <span class="property-type">string</span></dt>
+        <dd> The bluetooth MAC address of the peripheral </dd>
+        <dt>rssi <span class="property-type">number</span></dt>
+        <dd> The received signal strength (RSSI) </dd>
+        <dt>txPowerLevel <span class="property-type">number</span></dt>
+        <dd> The transmitter power level </dd>
+        <dt class="optional">connectable <span class="property-type">boolean</span></dt>
+        <dd> Indication if the peripheral is accepting connection </dd>
+        <dt class="optional">name <span class="property-type">string</span></dt>
+        <dd> Local name of the peripheral </dd>
+        <dt class="optional">manufacturerData <span class="property-type">buffer</span></dt>
+        <dd> Vendor specific data </dd>
+        <dt class="optional">services <span class="property-type">array</span></dt>
+        <dd> List of discovered service UUID's </dd>
+    </dl>
 </script>
 
 <script type="text/javascript">
@@ -88,7 +96,8 @@
         category: 'Bluetooth',
         color: '#4d94ff',
         defaults: {
-            name: {value:""}
+            name: {value:""},
+            disconnect: {value:false}
         },
         inputs:1,
         outputs:1,
@@ -113,19 +122,22 @@
     <dl class="message-properties">
         <dt>peripheral <span class="property-type">string</span></dt>
         <dd> Peripheral reference received from a BLE scanner node </dd>
+        <dt class="optional">disconnect <span class="property-type">boolean</span></dt>
+        <dd> Set to <code>true</code> to disconnect peripheral. <code>false</code> by default</dd>
      </dl>
     <h3>Outputs</h3>
     <dl class="message-properties">
-    <dt>topic <span class="property-type">string</span></dt>
-    <dd> Will be either <code>connected</code> or <code>disconnected</code> </dd>
-    <dt>connected <span class="property-type">boolean</span></dt>
-    <dd> Status if currently connected to the peripheral </dd>
-    <dt class="optional">rssi <span class="property-type">number</span></dt>
-    <dd> The received signal strength (RSSI) </dd>
-    <dt class="optional">services <span class="property-type">array</span></dt>
-    <dd> List of discovered services </dd>
-    <dt class="optional">charateristics <span class="property-type">array</span></dt>
-    <dd> List of discovered charateristics </dd>
+        <dt>topic <span class="property-type">string</span></dt>
+        <dd> Will be either <code>connected</code> or <code>disconnected</code> </dd>
+        <dt>connected <span class="property-type">boolean</span></dt>
+        <dd> Status if currently connected to the peripheral </dd>
+        <dt class="optional">rssi <span class="property-type">number</span></dt>
+        <dd> The received signal strength (RSSI) </dd>
+        <dt class="optional">services <span class="property-type">array</span></dt>
+        <dd> List of discovered services </dd>
+        <dt class="optional">charateristics <span class="property-type">array</span></dt>
+        <dd> List of discovered charateristics </dd>
+    </dl>
 </script>
 
 <script type="text/javascript">
@@ -175,10 +187,11 @@
     </dl>
     <h3>Outputs</h3>
     <dl class="message-properties">
-    <dt>payload <span class="property-type">buffer</span></dt>
-    <dd> Data received from the device </dd>
-    <dt>characteristic <span class="property-type">object</span></dt>
-    <dd> Characteristic the data originated from </dd>
+        <dt>payload <span class="property-type">buffer</span></dt>
+        <dd> Data received from the device </dd>
+        <dt>characteristic <span class="property-type">object</span></dt>
+        <dd> Characteristic the data originated from </dd>
+    </dl>
 </script>
 
 <script type="text/javascript">
