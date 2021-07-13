@@ -86,7 +86,13 @@ module.exports = function(RED) {
                 if(!node._continuous && msg.continuous) {
                     node._continuous = msg.continuous == true;
                 }
-                noble.startScanning(serviceUuids, false, function(error) {
+                
+                var duplicate = node.config.duplicate;
+                if(!duplicate && msg.duplicate) {
+                    duplicate = msg.duplicate == true;
+                }
+
+                noble.startScanning(serviceUuids, duplicate, function(error) {
                     if (error) {
                         node.error("Error scanning for devices: " + error);
                         node.status({ fill: "red", shape: "dot", text: "error" });
@@ -141,6 +147,13 @@ module.exports = function(RED) {
                 node.status({ fill: "red", shape: "dot", text: "invalid peripheral id" });
                 return;
             }
+
+            disconnect = msg.disconnect || node.config.disconnect
+            if(disconnect) {
+                noble._peripherals?.[msg.peripheral].disconnect()
+                return;
+            }
+
             if(node._peripheral) {
                 node._peripheral.removeListener('disconnect', deviceDisconnected);
             }
